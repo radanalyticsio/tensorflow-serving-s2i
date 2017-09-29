@@ -1,0 +1,23 @@
+#!/bin/bash -e
+cat <<EOF
+This is the radanalyticsio/tensorflow-serving-s2i S2I builder image. It will build
+a radanalytics tensorflow serving application image based on a github repository
+that you specify and the resulting image may be used to run
+your tensorflow application.
+Usage: 
+
+oc create -f https://raw.githubusercontent.com/radanalyticsio/tensorflow-serving-s2i/master/template.json
+
+oc new-app --template=tensorflowserver --param=APPLICATION_NAME=tf-reg --param=SOURCE_REPOSITORY=https://github.com/radanalyticsio/tensorflow-serving-s2i --param=SOURCE_DIRECTORY=models/regression
+
+environment variables which should be set when the application is launched:
+    APPLICATION_NAME -- name of the tensorflow application, required
+    SOURCE_REPOSITORY -- git repo for tensorflow models, required
+    SOURCE_DIRECTORY  -- sub directory within the repo where models are located
+
+EOF
+
+
+
+
+    

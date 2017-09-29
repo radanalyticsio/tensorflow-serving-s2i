@@ -1,0 +1,18 @@
+#!/bin/bash -e
+#
+# S2I run script for the 'radanalyticsio/tensorflow-serving-s2i' image.
+# The run script executes the server that runs your application.
+#
+# For more information see the documentation:
+#	https://github.com/openshift/source-to-image/blob/master/docs/builder_image.md
+#
+
+set -e
+
+echo "Running app..."
+
+pwd
+
+echo " -----> Run tenserflow server."
+
+exec /opt/app-root/tensorflow_model_server --port=6006 --model_name=mnist --model_base_path=/opt/app-root/src/
