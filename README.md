@@ -22,7 +22,10 @@ OR
 You can create from commandline.Just create a new application within OpenShift, pointing the S2I builder at the Git repository containing your tensorflow model files.
 
 ```
-oc new-app --template=tensorflow-server --param=APPLICATION_NAME=tf-reg --param=SOURCE_REPOSITORY=https://github.com/radanalyticsio/tensorflow-serving-s2i --param=SOURCE_DIRECTORY=mnist-models/regression
+oc new-app --template=tensorflow-server \
+    --param=APPLICATION_NAME=tf-reg \
+    --param=SOURCE_REPOSITORY=https://github.com/sub-mod/mnist-models \
+    --param=SOURCE_DIRECTORY=regression
 
 ```
 To have any changes to your model automatically redeployed when changes are pushed back up to your Git repository, you can use the [web hooks integration](https://docs.openshift.com/container-platform/latest/dev_guide/builds.html#webhook-triggers) of OpenShift to create a link from your Git repository hosting service back to OpenShift.
