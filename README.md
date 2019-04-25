@@ -15,7 +15,7 @@ oc create -f https://raw.githubusercontent.com/radanalyticsio/tensorflow-serving
 ```
 
 Once loaded, select the ``tensorflow-server`` template from the web console.
-The ``APPLICATION_NAME`` , ``SOURCE_REPOSITORY``  and ``SOURCE_DIRECTORY``must be specified.
+The ``APPLICATION_NAME`` , ``SOURCE_REPOSITORY``  , ``MODEL_NAME`` and ``SOURCE_DIRECTORY``must be specified.
 
 OR
 
@@ -24,6 +24,7 @@ You can create from commandline.Just create a new application within OpenShift, 
 ```
 oc new-app --template=tensorflow-server \
     --param=APPLICATION_NAME=tf-reg \
+    --param=MODEL_NAME=mnist \
     --param=SOURCE_REPOSITORY=https://github.com/sub-mod/mnist-models \
     --param=SOURCE_DIRECTORY=regression
 
@@ -32,7 +33,8 @@ To have any changes to your model automatically redeployed when changes are push
 
 ## Producing a build image ##
 
-To produce a builder image:
+To produce a builder image: 
+Note: make changes to Makefile to use a different Tensorflow Model server binary.
 
     $ make build
 
@@ -42,7 +44,7 @@ To print usage information for the builder image:
 
 To poke around inside the builder image:
 
-    $ sudo docker run -i -t <id from the make>
+    $ sudo docker run -i -t <id from the make> /bin/bash
     bash-4.2$ cd /opt/app-root # take a look around
 
 To tag and push a builder image:

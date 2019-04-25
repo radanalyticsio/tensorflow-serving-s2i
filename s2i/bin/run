@@ -8,11 +8,33 @@
 #
 
 set -e
+set -o pipefail
+
+command_exists () { type "$1" &> /dev/null ; }
+file_exists () { test -f $1 ; }
+folder_exists () { test -d $1 ; }
+MY_EXIT_1() {  exit 1; }
+MY_RETURN_1() {  return 1; }
+MY_RETURN_0() {  return 0; }
+env_check () {
+  exit_function=MY_RETURN_0;
+  # If exit function is passed as $2 use it.
+  if [[ ! -z "$2" ]];then exit_function=$2 ;fi 
+  if [ $# -eq 0 ];then printf "No arguments supplied. \nUsage:\n env_check \"ENV_NAME\" [\"exit_function\"]\n" && $exit_function;fi
+  param=$1;
+  # The exclamation mark makes param to get the value of the variable with that name.
+  if [[ -z "${!param}" ]];then echo "$1 is undefined" && $exit_function; else echo "$1 = "${!param} ;fi 
+}
+
 
 echo "Running app..."
-
 pwd
+env_check PORT MY_EXIT_1
+env_check MODEL_NAME MY_EXIT_1
+env_check RUN_OPTIONS
 
-echo " -----> Run tenserflow server."
 
-exec /opt/app-root/tensorflow_model_server --port=6006 --model_name=mnist --model_base_path=/opt/app-root/src/
+echo " -----> Run tenserflow model server."
+
+
+exec /opt/app-root/tensorflow_model_server $RUN_OPTIONS --port=$PORT --model_name=$MODEL_NAME --model_base_path=/opt/app-root/src/

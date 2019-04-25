@@ -16,6 +16,7 @@
                 "name": "${APPLICATION_NAME}",
                 "labels": {
                     "appid": "tf-app-server-${APPLICATION_NAME}",
+                    "appTypes": "tensorflow-serving-s2i",
                     "appName": "${APPLICATION_NAME}"
                 }
             }
@@ -27,6 +28,7 @@
                 "name": "${APPLICATION_NAME}-s2i",
                 "labels": {
                     "appid": "tf-app-server-${APPLICATION_NAME}",
+                    "appTypes": "tensorflow-serving-s2i",
                     "appName": "${APPLICATION_NAME}"
                 }
             },
@@ -36,7 +38,7 @@
                         "name": "latest",
                         "from": {
                             "kind": "DockerImage",
-                            "name": "radanalyticsio/tensorflow-serving-s2i:latest"
+                            "name": "${TENSORFLOW_SERVING_IMAGE}"
                         }
                     }
                 ]
@@ -49,6 +51,7 @@
                 "name": "${APPLICATION_NAME}",
                 "labels": {
                     "appid": "tf-app-server-${APPLICATION_NAME}",
+                    "appTypes": "tensorflow-serving-s2i",
                     "appName": "${APPLICATION_NAME}"
                 }
             },
@@ -92,6 +95,7 @@
                 "name": "${APPLICATION_NAME}",
                 "labels": {
                     "appid": "tf-app-server-${APPLICATION_NAME}",
+                    "appTypes": "tensorflow-serving-s2i",
                     "appName": "${APPLICATION_NAME}"
                 }
             },
@@ -126,6 +130,7 @@
                         "labels": {
                             "appid": "tf-app-server-${APPLICATION_NAME}",
                             "deploymentconfig": "${APPLICATION_NAME}",
+                            "appTypes": "tensorflow-serving-s2i",
                             "appName": "${APPLICATION_NAME}"
                         }
                     },
@@ -134,9 +139,23 @@
                             {
                                 "name": "${APPLICATION_NAME}",
                                 "image": "${APPLICATION_NAME}:latest",
+                                "env": [
+                                    {
+                                        "name": "PORT",
+                                        "value": "${PORT}"
+                                    },
+                                    {
+                                        "name": "MODEL_NAME",
+                                        "value": "${MODEL_NAME}"
+                                    },
+                                    {
+                                        "name": "RUN_OPTIONS",
+                                        "value": "${RUN_OPTIONS}"
+                                    }
+                                ],
                                 "ports": [
                                     {
-                                        "containerPort": 6006,
+                                        "containerPort": "${PORT}",
                                         "protocol": "TCP"
                                     }
                                 ]
@@ -153,15 +172,16 @@
                 "name": "${APPLICATION_NAME}",
                 "labels": {
                     "appid": "tf-app-server-${APPLICATION_NAME}",
+                    "appTypes": "tensorflow-serving-s2i",
                     "appName": "${APPLICATION_NAME}"
                 }
             },
             "spec": {
                 "ports": [
                     {
-                        "name": "6006-tcp",
+                        "name": "${PORT}-tcp",
                         "protocol": "TCP",
-                        "port": 6006,
+                        "port": "${PORT}",
                         "targetPort": 6006
                     }
                 ],
@@ -182,14 +202,39 @@
         {
             "name": "SOURCE_REPOSITORY",
             "description": "Git repository for source.",
-            "value": "",
+            "value": "https://github.com/sub-mod/mnist-models",
             "required": true
         },
         {
             "name": "SOURCE_DIRECTORY",
             "description": "Sub-directory of repository for source files.",
+            "value": "cnn",
+            "required": false
+        },  
+        {
+            "name": "TENSORFLOW_SERVING_IMAGE",
+            "description": "Name of the Image.radanalyticsio/tensorflow-serving-s2i:latest",
+            "value": "quay.io/aicoe/tensorflow-serving-s2i:2017",
+            "required": false
+        },
+        {
+            "name": "MODEL_NAME",
+            "description": "Name of the model. ex: mnist",
+            "value": "mnist",
+            "required": false
+        },
+        {
+            "name": "RUN_OPTIONS",
+            "description": "Additional options for tensorflow_model_server.",
             "value": "",
             "required": false
+        },
+        {
+            "name": "PORT",
+            "description": "port number of the application(internal ports are 6006 & 8500",
+            "value": "6006",
+            "required": false
         }
+
     ]
 }
