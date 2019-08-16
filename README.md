@@ -1,4 +1,4 @@
-# Radanalytics Tensorflow Serving #
+# Tensorflow Serving S2I #
 
 This is a builder image for a tensorflow serving applications. It is
 meant to be used in an openshift project with tensorflow models.
