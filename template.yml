@@ -1,0 +1,181 @@
+---
+kind: Template
+apiVersion: v1
+metadata:
+  name: tensorflow-server
+  annotations:
+    description: Tensorflow Serving server
+    tags: tf-app
+objects:
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    name: "${APPLICATION_NAME}"
+    labels:
+      appTypes: tensorflow-serving-s2i
+      app: "${APPLICATION_NAME}"
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    name: "${APPLICATION_NAME}-s2i"
+    labels:
+      appTypes: tensorflow-serving-s2i
+      app: "${APPLICATION_NAME}"
+  spec:
+    tags:
+    - name: latest
+      from:
+        kind: DockerImage
+        name: "${TENSORFLOW_SERVING_IMAGE}"
+- kind: BuildConfig
+  apiVersion: v1
+  metadata:
+    name: "${APPLICATION_NAME}"
+    labels:
+      appTypes: tensorflow-serving-s2i
+      app: "${APPLICATION_NAME}"
+  spec:
+    triggers:
+    - type: ConfigChange
+    - type: ImageChange
+    source:
+      type: Git
+      git:
+        uri: "${SOURCE_REPOSITORY}"
+      contextDir: "${SOURCE_DIRECTORY}"
+    strategy:
+      type: Source
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          name: "${APPLICATION_NAME}-s2i:latest"
+    output:
+      to:
+        kind: ImageStreamTag
+        name: "${APPLICATION_NAME}:latest"
+- kind: DeploymentConfig
+  apiVersion: v1
+  metadata:
+    name: "${APPLICATION_NAME}"
+    labels:
+      appTypes: tensorflow-serving-s2i
+      app: "${APPLICATION_NAME}"
+  spec:
+    strategy:
+      type: Rolling
+    triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+        - "${APPLICATION_NAME}"
+        from:
+          kind: ImageStreamTag
+          name: "${APPLICATION_NAME}:latest"
+    replicas: ${{REPLICAS}}
+    selector:
+      deploymentconfig: "${APPLICATION_NAME}"
+    template:
+      metadata:
+        labels:
+          deploymentconfig: "${APPLICATION_NAME}"
+          appTypes: tensorflow-serving-s2i
+          app: "${APPLICATION_NAME}"
+      spec:
+        containers:
+        - name: "${APPLICATION_NAME}"
+          image: "${APPLICATION_NAME}:latest"
+          env:
+          - name: PORT
+            value: "${PORT}"
+          - name: REST_PORT
+            value: "${REST_PORT}"
+          - name: MODEL_NAME
+            value: "${MODEL_NAME}"
+          - name: RUN_OPTIONS
+            value: "${RUN_OPTIONS}"
+          - name: TF_CPP_MIN_VLOG_LEVEL
+            value: "${TF_CPP_MIN_VLOG_LEVEL}"
+          - name: FILE_SYSTEM_POLL
+            value: "${FILE_SYSTEM_POLL}"
+          ports:
+          - containerPort: ${{PORT}}
+            protocol: TCP
+          - containerPort: ${{REST_PORT}}
+            protocol: TCP
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: ${APPLICATION_NAME}-grpc
+    labels:
+      appTypes: tensorflow-serving-s2i
+      app: ${APPLICATION_NAME}
+  spec:
+    ports:
+      - name: 8500-tcp
+        port: 8500
+        protocol: TCP
+        targetPort: 8500
+    selector:
+      deploymentconfig: ${APPLICATION_NAME}
+- kind: Service
+  apiVersion: v1
+  metadata:
+    name: "${APPLICATION_NAME}-rest"
+    labels:
+      appTypes: tensorflow-serving-s2i
+      app: "${APPLICATION_NAME}"
+  spec:
+    ports:
+    - name: "8501-tcp"
+      protocol: TCP
+      port: 8501
+      targetPort: 8501
+    selector:
+      deploymentconfig: "${APPLICATION_NAME}"
+parameters:
+- name: APPLICATION_NAME
+  description: The name of the application.
+  value: tf-app-server
+  from: "[a-zA-Z0-9]{10}"
+  required: true
+- name: REPLICAS
+  value: "1"
+  required: true
+- name: SOURCE_REPOSITORY
+  description: Git repository for source.
+  value: https://github.com/sub-mod/mnist-models
+  required: true
+- name: SOURCE_DIRECTORY
+  description: Sub-directory of repository for source files.
+  value: cnn
+  required: false
+- name: TENSORFLOW_SERVING_IMAGE
+  description: Name of the Image.
+  value: quay.io/aicoe/tensorflow-serving-s2i:2020
+  required: false
+- name: MODEL_NAME
+  description: 'Name of the model. ex: mnist'
+  value: mnist
+  required: false
+- name: RUN_OPTIONS
+  description: Additional options for tensorflow_model_server.
+  value: ''
+  required: false
+- name: PORT
+  description: port number of the application(internal ports are 6006 & 8500
+  value: '8500'
+  required: false
+- name: REST_PORT
+  description: port number of the application(internal ports are 6006 & 8500
+  value: '8501'
+  required: false
+- name: TF_CPP_MIN_VLOG_LEVEL
+  description: debug level
+  value: '3'
+  required: false
+- name: FILE_SYSTEM_POLL
+  description: polling model changes
+  value: '30'
+  required: false

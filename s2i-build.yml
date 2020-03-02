@@ -1,0 +1,73 @@
+---
+kind: Template
+apiVersion: v1
+metadata:
+  name: tensorflow-server-build
+  annotations:
+    description: Tensorflow Serving build
+    tags: tf-app
+objects:
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    name: "${APPLICATION_NAME}"
+    labels:
+      appTypes: tensorflow-serving-s2i
+      app: "${APPLICATION_NAME}"
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    name: "${APPLICATION_NAME}-s2i"
+    labels:
+      appTypes: tensorflow-serving-s2i
+      app: "${APPLICATION_NAME}"
+  spec:
+    tags:
+    - name: latest
+      from:
+        kind: DockerImage
+        name: "${TENSORFLOW_SERVING_IMAGE}"
+- kind: BuildConfig
+  apiVersion: v1
+  metadata:
+    name: "${APPLICATION_NAME}"
+    labels:
+      appTypes: tensorflow-serving-s2i
+      app: "${APPLICATION_NAME}"
+  spec:
+    triggers:
+    - type: ConfigChange
+    - type: ImageChange
+    source:
+      type: Git
+      git:
+        uri: "${SOURCE_REPOSITORY}"
+      contextDir: "${SOURCE_DIRECTORY}"
+    strategy:
+      type: Source
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          name: "${APPLICATION_NAME}-s2i:latest"
+    output:
+      to:
+        kind: ImageStreamTag
+        name: "${APPLICATION_NAME}:latest"
+parameters:
+- name: APPLICATION_NAME
+  description: The name of the application.
+  value: tf-app-server
+  from: "[a-zA-Z0-9]{10}"
+  required: true
+- name: SOURCE_REPOSITORY
+  description: Git repository for source.
+  value: https://github.com/sub-mod/mnist-models
+  required: true
+- name: SOURCE_DIRECTORY
+  description: Sub-directory of repository for source files.
+  value: cnn
+  required: false
+- name: TENSORFLOW_SERVING_IMAGE
+  description: Name of the Image.
+  value: quay.io/aicoe/tensorflow-serving-s2i:2020
+  required: false

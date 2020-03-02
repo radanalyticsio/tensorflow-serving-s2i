@@ -13,7 +13,7 @@
                 },
                 "from": {
                     "kind": "DockerImage",
-                    "name": "radanalyticsio/tensorflow-serving-s2i:latest"
+                    "name": "aicoe/tensorflow-serving-s2i:latest"
                 }
             }
         ]

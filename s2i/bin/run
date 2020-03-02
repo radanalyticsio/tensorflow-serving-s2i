@@ -1,6 +1,6 @@
 #!/bin/bash -e
 #
-# S2I run script for the 'radanalyticsio/tensorflow-serving-s2i' image.
+# S2I run script for the 'AICoE/tensorflow-serving-s2i' image.
 # The run script executes the server that runs your application.
 #
 # For more information see the documentation:
@@ -30,11 +30,13 @@ env_check () {
 echo "Running app..."
 pwd
 env_check PORT MY_EXIT_1
+env_check REST_PORT MY_EXIT_1
 env_check MODEL_NAME MY_EXIT_1
 env_check RUN_OPTIONS
+env_check FILE_SYSTEM_POLL
 
 
 echo " -----> Run tenserflow model server."
 
 
-exec /opt/app-root/tensorflow_model_server $RUN_OPTIONS --port=$PORT --model_name=$MODEL_NAME --model_base_path=/opt/app-root/src/
+exec /opt/app-root/tensorflow_model_server $RUN_OPTIONS --port=$PORT --rest_api_port=$REST_PORT --model_name=$MODEL_NAME --file_system_poll_wait_seconds=$FILE_SYSTEM_POLL  --model_base_path=/opt/app-root/src/

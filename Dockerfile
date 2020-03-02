@@ -1,16 +1,19 @@
-FROM centos/s2i-base-centos7
+FROM registry.access.redhat.com/ubi7/s2i-base
+#FROM centos/s2i-base-centos7
 
-MAINTAINER Subin Modeel smodeel@redhat.com
+MAINTAINER Subin Modeel<smodeel@redhat.com>
 
 ENV BUILDER_VERSION 1.0
 
-ARG TF_SERVING_PORT=6006
-ARG TF_SERVING_PACKAGE=https://github.com/sub-mod/mnist-app/releases/download/2017_tensorflow_model_server/tensorflow_model_server
+ARG TF_SERVING_PORT=8500
+ARG TF_SERVING_REST_PORT=8501
+ARG TF_SERVING_PACKAGE=https://github.com/AICoE/tensorflow-wheels/releases/download/tensorflow_serving_api-r2.1-cpu-2020-02-18_155137/tensorflow_model_server
+
 ENV TF_SERVING_PACKAGE $TF_SERVING_PACKAGE
 
 LABEL io.k8s.description="Tensorflow serving builder" \
       io.k8s.display-name="tensorflow serving builder" \
-      io.openshift.expose-services="6006:http" \
+      io.openshift.expose-services="8500:http" \
       io.openshift.tags="tensorflow"
 
 RUN yum install -y tree which wget \
@@ -30,7 +33,7 @@ USER 1001
 
 
 EXPOSE $TF_SERVING_PORT
-EXPOSE 8500
+EXPOSE $TF_SERVING_REST_PORT
 
 # TODO: Set the default CMD for the image
 CMD ["/usr/libexec/s2i/usage"]
